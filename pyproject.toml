@@ -1,0 +1,114 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "git-changelog-maestro"
+dynamic = ["version"]
+description = "Generate elegant changelogs from Git commit history using Conventional Commits"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    {name = "petherldev", email = "petherl@protonmail.com"},
+]
+keywords = ["git", "changelog", "conventional-commits", "semantic-versioning", "cli"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Version Control :: Git",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "click>=8.0.0",
+    "rich>=13.0.0",
+    "gitpython>=3.1.0",
+    "jinja2>=3.0.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0.0",
+    "tomli>=2.0.0; python_version<'3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/petherldev/git-changelog-maestro"
+Repository = "https://github.com/petherldev/git-changelog-maestro"
+Issues = "https://github.com/petherldev/git-changelog-maestro/issues"
+Changelog = "https://github.com/petherldev/git-changelog-maestro/blob/main/CHANGELOG.md"
+
+[project.scripts]
+changelog-maestro = "changelog_maestro.cli:main"
+
+[tool.hatch.version]
+path = "changelog_maestro/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["changelog_maestro"]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["changelog_maestro"]
+omit = ["tests/*", "changelog_maestro/__main__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
