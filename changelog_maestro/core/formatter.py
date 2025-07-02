@@ -123,7 +123,9 @@ class ChangelogFormatter:
                 "changelog": [entry.to_dict() for entry in entries],
                 "generated_at": datetime.now().isoformat(),
             }
-            return yaml.dump(data, default_flow_style=False, allow_unicode=True)
+            result = yaml.dump(data, default_flow_style=False, allow_unicode=True)
+            assert isinstance(result, str)
+            return result
         except Exception as e:
             raise FormatterError(f"Failed to format YAML: {e}")
 

@@ -1,7 +1,9 @@
 # Git Changelog Maestro
 
 Generate elegant changelogs from Git commit history using Conventional Commits, with smart formatting, customizable templates, and CI/CD integration.
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
 [![Tests](https://github.com/petherldev/git-changelog-maestro/workflows/Tests/badge.svg)](https://github.com/petherldev/git-changelog-maestro/actions)
 [![Coverage](https://codecov.io/gh/petherldev/git-changelog-maestro/branch/main/graph/badge.svg)](https://codecov.io/gh/petherldev/git-changelog-maestro)
 
