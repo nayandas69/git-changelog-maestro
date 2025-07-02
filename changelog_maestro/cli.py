@@ -2,15 +2,15 @@
 
 import sys
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 import click
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-from .core.generator import ChangelogGenerator
 from .core.config import Config
+from .core.generator import ChangelogGenerator
 from .utils.exceptions import ChangelogError
 
 console = Console()
@@ -226,8 +226,8 @@ def generate(
 def validate(repo_path: Path) -> None:
     """Validate commit messages against Conventional Commits specification."""
     try:
-        from .core.parser import ConventionalCommitParser
         from .core.git import GitRepository
+        from .core.parser import ConventionalCommitParser
 
         git_repo = GitRepository(repo_path)
         parser = ConventionalCommitParser()

@@ -3,10 +3,11 @@
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Iterator
+from typing import Iterator, List, Optional
 
 import git
-from git import Repo, Commit as GitCommit
+from git import Commit as GitCommit
+from git import Repo
 
 from ..utils.exceptions import GitError
 

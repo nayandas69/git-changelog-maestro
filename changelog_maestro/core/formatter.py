@@ -3,7 +3,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, List, Optional
 
 try:
     import yaml
@@ -12,9 +12,9 @@ except ImportError:
 
 from jinja2 import Environment, FileSystemLoader, Template
 
-from .parser import ParsedCommit
-from .git import Commit, Tag
 from ..utils.exceptions import FormatterError
+from .git import Commit, Tag
+from .parser import ParsedCommit
 
 
 class ChangelogEntry:

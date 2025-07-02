@@ -1,19 +1,19 @@
 """Pytest configuration and fixtures."""
 
-import tempfile
 import gc
-import time
-import shutil
 import os
-from pathlib import Path
+import shutil
+import tempfile
+import time
 from datetime import datetime
+from pathlib import Path
 from typing import Generator
 
-import pytest
 import git
+import pytest
 
-from changelog_maestro.core.git import GitRepository, Commit
 from changelog_maestro.core.config import Config
+from changelog_maestro.core.git import Commit, GitRepository
 
 
 def force_remove_readonly(func, path, exc):
@@ -29,23 +29,23 @@ def temp_repo() -> Generator[Path, None, None]:
     temp_dir = tempfile.mkdtemp()
     repo_path = Path(temp_dir)
     repo = None
-    
+
     try:
         # Initialize Git repository
         repo = git.Repo.init(repo_path)
-        
+
         # Configure Git user
         repo.config_writer().set_value("user", "name", "Test User").release()
         repo.config_writer().set_value("user", "email", "test@example.com").release()
-        
+
         # Create initial commit
         readme_file = repo_path / "README.md"
         readme_file.write_text("# Test Repository\n")
         repo.index.add([str(readme_file)])
         repo.index.commit("Initial commit")
-        
+
         yield repo_path
-        
+
     finally:
         # Aggressive cleanup for Windows
         try:
@@ -54,7 +54,7 @@ def temp_repo() -> Generator[Path, None, None]:
                 del repo
             gc.collect()
             time.sleep(0.2)  # Give Windows more time
-            
+
             # Force remove the directory
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir, onerror=force_remove_readonly)

@@ -3,13 +3,13 @@
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
-from .config import Config
-from .git import GitRepository, Commit
-from .parser import ConventionalCommitParser, ParsedCommit
-from .formatter import ChangelogFormatter, ChangelogEntry
 from ..utils.exceptions import ChangelogError
+from .config import Config
+from .formatter import ChangelogEntry, ChangelogFormatter
+from .git import Commit, GitRepository
+from .parser import ConventionalCommitParser, ParsedCommit
 
 
 class ChangelogGenerator:
