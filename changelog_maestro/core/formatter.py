@@ -5,11 +5,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-try:
-    import yaml
-except ImportError:
-    yaml = None
-
 from jinja2 import Environment, FileSystemLoader, Template
 
 from ..utils.exceptions import FormatterError
@@ -118,7 +113,9 @@ class ChangelogFormatter:
 
     def format_yaml(self, entries: List[ChangelogEntry]) -> str:
         """Format changelog entries as YAML."""
-        if yaml is None:
+        try:
+            import yaml
+        except ImportError:
             raise FormatterError("PyYAML is required for YAML output format")
 
         try:
