@@ -126,7 +126,7 @@ class TestGitRepository:
             tag1 = repo.create_tag("v1.0.0", ref=initial_commit)
 
             # Wait a moment to ensure different timestamps
-            time.sleep(0.1)
+            time.sleep(1.1)
 
             # Add another commit - this will have a later timestamp
             test_file = temp_repo / "test.txt"
