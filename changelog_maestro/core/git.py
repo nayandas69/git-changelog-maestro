@@ -11,6 +11,8 @@ from git import Repo
 
 from ..utils.exceptions import GitError
 
+from typing import Any
+
 
 @dataclass
 class Commit:
@@ -28,9 +30,13 @@ class Commit:
         """Create Commit from GitPython commit object."""
         return cls(
             hash=git_commit.hexsha,
-            message=git_commit.message.strip(),
-            author=git_commit.author.name,
-            email=git_commit.author.email,
+            message=(
+                git_commit.message.strip().decode()
+                if isinstance(git_commit.message, bytes)
+                else git_commit.message.strip()
+            ),
+            author=git_commit.author.name or "Unknown",
+            email=git_commit.author.email or "unknown@example.com",
             date=datetime.fromtimestamp(git_commit.committed_date),
             is_merge=len(git_commit.parents) > 1,
         )
@@ -46,7 +52,7 @@ class Tag:
     message: Optional[str] = None
 
     @classmethod
-    def from_git_tag(cls, git_tag) -> "Tag":
+    def from_git_tag(cls, git_tag: Any) -> "Tag":
         """Create Tag from GitPython tag object."""
         commit = git_tag.commit
         return cls(
