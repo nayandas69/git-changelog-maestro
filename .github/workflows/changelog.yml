@@ -1,0 +1,33 @@
+name: Generate Changelog
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install changelog-maestro
+        run: pip install git-changelog-maestro
+      
+      - name: Generate changelog
+        run: changelog-maestro --since $(git describe --tags --abbrev=0 HEAD^)
+      
+      - name: Commit changelog
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add CHANGELOG.md
+          git commit -m "docs: update changelog for ${{ github.ref_name }}" || exit 0
+          git push
