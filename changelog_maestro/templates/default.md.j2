@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [{{ entry.version }}]{% if entry.date %} - {{ entry.date | format_date }}{% endif %}
 
 {% if entry.breaking_changes %}
-### ⚠️ BREAKING CHANGES
+### ⚠ BREAKING CHANGES
 
 {% for commit in entry.breaking_changes %}
 - **{{ commit.type }}{% if commit.scope %}({{ commit.scope }}){% endif %}!:** {{ commit.description }}
