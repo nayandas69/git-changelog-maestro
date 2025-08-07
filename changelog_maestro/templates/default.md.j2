@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### ⚠ BREAKING CHANGES
 
 {% for commit in entry.breaking_changes %}
-- **{{ commit.type }}{{ commit | format_scope }}:** {{ commit.description }}
+- **{{ commit.type }}{{ commit.scope | format_scope }}:** {{ commit.description }}
   {% if commit.breaking_change_description %}
   
   {{ commit.breaking_change_description }}
@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### {{ section_name }}
 
 {% for commit in commits %}
-- **{{ commit.type }}{{ commit | format_scope }}:** {{ commit.description }}
+- **{{ commit.type }}{{ commit.scope | format_scope }}:** {{ commit.description }}
   {% if commit.body %}
   
   {{ commit.body }}
