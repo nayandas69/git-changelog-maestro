@@ -114,19 +114,20 @@ class ChangelogGenerator:
         for i, tag in enumerate(tags):
             # Get commits for this version
             if i == 0:
-                # Latest tag - commits from tag to HEAD
+                # Latest tag - commits up to and including the tag
+                # Include commits that are at or before the tag date
                 version_commits = [
                     (commit, parsed)
                     for commit, parsed in remaining_commits
-                    if commit.date >= tag.date
+                    if commit.date <= tag.date
                 ]
             else:
-                # Previous tag - commits between this tag and next tag
+                # Previous tag - commits between previous tag and this tag
                 next_tag = tags[i - 1]
                 version_commits = [
                     (commit, parsed)
                     for commit, parsed in remaining_commits
-                    if tag.date <= commit.date < next_tag.date
+                    if next_tag.date < commit.date <= tag.date
                 ]
 
             if version_commits:
@@ -138,10 +139,19 @@ class ChangelogGenerator:
                     if commit_tuple in remaining_commits:
                         remaining_commits.remove(commit_tuple)
 
-        # Add unreleased commits if any
+        # Add unreleased commits if any (commits newer than the latest tag)
         if remaining_commits:
-            unreleased_entry = self._create_unreleased_entry(remaining_commits)
-            entries.insert(0, unreleased_entry[0])  # Add at the beginning
+            # Only include commits that are actually newer than the latest tag
+            latest_tag_date = tags[0].date if tags else datetime.min
+            truly_unreleased = [
+                (commit, parsed)
+                for commit, parsed in remaining_commits
+                if commit.date > latest_tag_date
+            ]
+
+            if truly_unreleased:
+                unreleased_entry = self._create_unreleased_entry(truly_unreleased)
+                entries.insert(0, unreleased_entry[0])  # Add at the beginning
 
         return entries
 

@@ -6,17 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 {% for entry in entries %}
-## [{{ entry.version }}] - {{ entry.date | format_date }}
+## [{{ entry.version }}]{% if entry.date %} - {{ entry.date | format_date }}{% endif %}
 
 {% if entry.breaking_changes %}
 ### ⚠ BREAKING CHANGES
 
 {% for commit in entry.breaking_changes %}
-- **{{ commit.type }}{{ commit | format_scope }}:** {{ commit.description }}
-  {% if commit.breaking_change_description %}
-  
-  {{ commit.breaking_change_description }}
-  {% endif %}
+- **{{ commit.type }}{% if commit.scope %}({{ commit.scope }}){% endif %}!:** {{ commit.description }}
+{% if commit.breaking_change_description %}
+
+  > {{ commit.breaking_change_description }}
+{% endif %}
 {% endfor %}
 
 {% endif %}
@@ -24,16 +24,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### {{ section_name }}
 
 {% for commit in commits %}
-- **{{ commit.type }}{{ commit | format_scope }}:** {{ commit.description }}
-  {% if commit.body %}
-  
-  {{ commit.body }}
-  {% endif %}
+- {{ commit.description }}{% if commit.scope %} `({{ commit.scope }})`{% endif %}
+{% if commit.body %}
+
+  {{ commit.body | replace('\n', '\n  ') }}
+{% endif %}
 {% endfor %}
 
 {% endfor %}
+{% if not loop.last %}
+
+---
+
+{% endif %}
 {% endfor %}
 
 ---
 
-*This changelog was generated automatically by [git-changelog-maestro](https://github.com/petherldev/git-changelog-maestro)*
+<div align="center">
+  <sub>Built with ❤️ using <a href="https://github.com/petherldev/git-changelog-maestro">git-changelog-maestro</a></sub>
+</div>
