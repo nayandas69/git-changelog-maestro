@@ -292,13 +292,20 @@ pre-commit run --all-files
 
 ### ⚠ BREAKING CHANGES
 
-- **feat(api):** change response format for user endpoints
+### Bug Fixes
+
+
+- correct scope formatting in changelog template `(template)`
 
 ### Features
 
-- **auth:** add OAuth2 authentication support
-- **ui:** implement dark mode toggle
-- **api:** add user profile endpoints
+
+- add GitHub Actions workflow to auto-generate changelog on new tag `(ci)`
+
+
+  Introduces changelog.yml which triggers on version tags (v*), 
+
+  installs git-changelog-maestro, generates CHANGELOG.md, and commits it back to the repository.
 ```
 
 ### JSON
