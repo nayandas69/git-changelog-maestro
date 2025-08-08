@@ -1,6 +1,6 @@
 """Git Changelog Maestro - Generate elegant changelogs from Git commit history."""
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __author__ = "petherldev"
 __email__ = "petherl@protonmail.com"
 

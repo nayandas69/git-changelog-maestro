@@ -100,6 +100,41 @@ class GitRepository:
         except git.GitCommandError as e:
             raise GitError(f"Failed to get commits: {e}")
 
+    def get_commits_in_range(
+        self,
+        since: Optional[str] = None,
+        until: Optional[str] = None,
+        include_merges: bool = False,
+    ) -> List[Commit]:
+        """Get commits in a specific tag range."""
+        try:
+            # Build the revision range for git log
+            if since and until:
+                # Between two tags
+                rev_range = f"{since}..{until}"
+            elif since:
+                # From tag to HEAD
+                rev_range = f"{since}..HEAD"
+            elif until:
+                # From beginning to tag
+                rev_range = until
+            else:
+                # All commits
+                rev_range = "HEAD"
+
+            # Get commits using the range
+            git_commits = list(self.repo.iter_commits(rev_range))
+            commits = [Commit.from_git_commit(gc) for gc in git_commits]
+
+            # Filter merge commits if requested
+            if not include_merges:
+                commits = [c for c in commits if not c.is_merge]
+
+            return commits
+
+        except git.GitCommandError as e:
+            raise GitError(f"Failed to get commits in range: {e}")
+
     def get_tags(self) -> List[Tag]:
         """Get all tags from the repository."""
         try:

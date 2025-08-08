@@ -30,7 +30,7 @@ class ChangelogGenerator:
     def generate(self) -> str:
         """Generate changelog content."""
         try:
-            # Get commits from repository
+            # Get commits from repository using the improved method
             commits = self.git_repo.get_commits(
                 since=self.config.since_tag,
                 until=self.config.until_tag,
@@ -97,6 +97,87 @@ class ChangelogGenerator:
         self, parsed_commits: List[tuple[Commit, ParsedCommit]]
     ) -> List[ChangelogEntry]:
         """Group commits by version/tag."""
+        # If we have specific since/until tags, handle them differently
+        if self.config.since_tag or self.config.until_tag:
+            return self._group_commits_by_tag_range(parsed_commits)
+        else:
+            return self._group_commits_by_all_tags(parsed_commits)
+
+    def _group_commits_by_tag_range(
+        self, parsed_commits: List[tuple[Commit, ParsedCommit]]
+    ) -> List[ChangelogEntry]:
+        """Group commits when specific tag range is provided."""
+        # For tag ranges, we want to show all commits in that range
+        # grouped by the tags that exist within that range
+
+        # Get all tags
+        all_tags = self.git_repo.get_tags()
+
+        if not all_tags:
+            # No tags, create single "Unreleased" entry
+            return self._create_unreleased_entry(parsed_commits)
+
+        # Sort tags by date (newest first for display)
+        all_tags.sort(key=lambda t: t.date, reverse=True)
+
+        # If we have both since and until, create a single entry for that range
+        if self.config.since_tag and self.config.until_tag:
+            version_name = f"{self.config.since_tag}..{self.config.until_tag}"
+            entry = ChangelogEntry(version_name, datetime.now())
+
+            for commit, parsed_commit in parsed_commits:
+                section_name = self.config.get_section_name(parsed_commit.type)
+                entry.add_commit(parsed_commit, section_name)
+
+            return [entry] if entry.has_changes() else []
+
+        # Otherwise, group by individual tags in the range
+        entries = []
+
+        # Find relevant tags based on the range
+        relevant_tags = []
+        for tag in all_tags:
+            include_tag = True
+
+            # Check if tag is within our range
+            if self.config.since_tag:
+                since_tag = next(
+                    (t for t in all_tags if t.name == self.config.since_tag), None
+                )
+                if since_tag and tag.date <= since_tag.date:
+                    include_tag = False
+
+            if self.config.until_tag:
+                until_tag = next(
+                    (t for t in all_tags if t.name == self.config.until_tag), None
+                )
+                if until_tag and tag.date > until_tag.date:
+                    include_tag = False
+
+            if include_tag:
+                relevant_tags.append(tag)
+
+        # Create entries for relevant tags
+        for tag in relevant_tags:
+            # For now, include all commits for each tag in range
+            # This is a simplified approach - in practice you might want
+            # to be more precise about which commits belong to which tag
+            if parsed_commits:
+                entry = self._create_version_entry(tag.name, tag.date, parsed_commits)
+                if entry.has_changes():
+                    entries.append(entry)
+                    break  # Only create one entry to avoid duplication
+
+        # If no relevant tags found, create unreleased entry
+        if not entries and parsed_commits:
+            entries = self._create_unreleased_entry(parsed_commits)
+
+        return entries
+
+    def _group_commits_by_all_tags(
+        self, parsed_commits: List[tuple[Commit, ParsedCommit]]
+    ) -> List[ChangelogEntry]:
+        """Group commits by all tags when no specific range is provided."""
         # Get tags from repository
         tags = self.git_repo.get_tags()
 
@@ -104,54 +185,56 @@ class ChangelogGenerator:
             # No tags, create single "Unreleased" entry
             return self._create_unreleased_entry(parsed_commits)
 
-        # Sort tags by date (newest first)
-        tags.sort(key=lambda t: t.date, reverse=True)
+        # Sort tags by date (oldest first)
+        tags.sort(key=lambda t: t.date)
 
         entries = []
-        remaining_commits = parsed_commits.copy()
+        processed_commits = set()
 
-        # Process each tag
+        # Process each tag (oldest to newest)
         for i, tag in enumerate(tags):
-            # Get commits for this version
+            # Get the date range for this tag
             if i == 0:
-                # Latest tag - commits up to and including the tag
-                # Include commits that are at or before the tag date
-                version_commits = [
-                    (commit, parsed)
-                    for commit, parsed in remaining_commits
-                    if commit.date <= tag.date
-                ]
+                # First tag - all commits up to this tag
+                start_date = datetime.min
             else:
-                # Previous tag - commits between previous tag and this tag
-                next_tag = tags[i - 1]
-                version_commits = [
-                    (commit, parsed)
-                    for commit, parsed in remaining_commits
-                    if next_tag.date < commit.date <= tag.date
-                ]
+                # Subsequent tags - commits after previous tag
+                start_date = tags[i - 1].date
+
+            end_date = tag.date
+
+            # Get commits for this version
+            version_commits = [
+                (commit, parsed)
+                for commit, parsed in parsed_commits
+                if start_date < commit.date <= end_date
+                and (commit.hash, parsed.type) not in processed_commits
+            ]
 
             if version_commits:
                 entry = self._create_version_entry(tag.name, tag.date, version_commits)
                 entries.append(entry)
 
-                # Remove processed commits
-                for commit_tuple in version_commits:
-                    if commit_tuple in remaining_commits:
-                        remaining_commits.remove(commit_tuple)
+                # Mark commits as processed
+                for commit, parsed in version_commits:
+                    processed_commits.add((commit.hash, parsed.type))
 
-        # Add unreleased commits if any (commits newer than the latest tag)
-        if remaining_commits:
-            # Only include commits that are actually newer than the latest tag
-            latest_tag_date = tags[0].date if tags else datetime.min
-            truly_unreleased = [
+        # Add unreleased commits (commits newer than the latest tag)
+        if tags:
+            latest_tag_date = max(tag.date for tag in tags)
+            unreleased_commits = [
                 (commit, parsed)
-                for commit, parsed in remaining_commits
+                for commit, parsed in parsed_commits
                 if commit.date > latest_tag_date
+                and (commit.hash, parsed.type) not in processed_commits
             ]
 
-            if truly_unreleased:
-                unreleased_entry = self._create_unreleased_entry(truly_unreleased)
-                entries.insert(0, unreleased_entry[0])  # Add at the beginning
+            if unreleased_commits:
+                unreleased_entry = self._create_unreleased_entry(unreleased_commits)
+                entries = unreleased_entry + entries
+
+        # Sort entries by version (newest first for display)
+        entries.sort(key=lambda e: e.date, reverse=True)
 
         return entries
 
